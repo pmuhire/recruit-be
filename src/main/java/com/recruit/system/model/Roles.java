@@ -1,12 +1,7 @@
 package com.recruit.system.model;
-import jakarta.persistence.*;
-import lombok.*;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
+import jakarta.persistence.*;
+
 @Entity
 @Table(name = "roles")
 public class Roles {
@@ -17,4 +12,31 @@ public class Roles {
 
     @Column(unique = true, nullable = false)
     private String name;
+
+    // Default constructor
+    public Roles() {
+    }
+
+    // Full constructor
+    public Roles(Long id, String name) {
+        this.id = id;
+        this.name = name;
+    }
+
+    // Getters and Setters
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
 }

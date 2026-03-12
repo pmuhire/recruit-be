@@ -1,6 +1,8 @@
 package com.recruit.system.security;
+
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.security.Key;
@@ -9,27 +11,22 @@ import java.util.Date;
 @Service
 public class JwtService {
 
-    private final String SECRET =
-            "veryveryveryveryveryverysecretkey123";
+    private final String SECRET = "veryveryveryveryveryverysecretkey123";
 
     private Key getSignKey() {
         return Keys.hmacShaKeyFor(SECRET.getBytes());
     }
 
     public String generateToken(String username) {
-
         return Jwts.builder()
                 .setSubject(username)
                 .setIssuedAt(new Date())
-                .setExpiration(
-                        new Date(System.currentTimeMillis() + 86400000)
-                )
+                .setExpiration(new Date(System.currentTimeMillis() + 86400000)) // 24h
                 .signWith(getSignKey())
                 .compact();
     }
 
     public String extractUsername(String token) {
-
         return Jwts.parserBuilder()
                 .setSigningKey(getSignKey())
                 .build()
@@ -38,7 +35,8 @@ public class JwtService {
                 .getSubject();
     }
 
-    public boolean isTokenValid(String token, String username) {
-        return username.equals(extractUsername(token));
+    // ✅ Accept UserDetails, not String
+    public boolean isTokenValid(String token, UserDetails userDetails) {
+        return userDetails.getUsername().equals(extractUsername(token));
     }
 }

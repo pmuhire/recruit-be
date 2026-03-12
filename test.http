@@ -1,0 +1,27 @@
+### 1. Register User
+POST http://localhost:8000/auth/register
+Content-Type: application/json
+
+{
+  "username": "adminuser",
+  "email": "admin@example.com",
+  "password": "AdminPass123",
+  "role": "ADMIN"
+}
+
+###
+
+### 2. Login User
+POST http://localhost:8000/auth/login
+Content-Type: application/json
+
+{
+  "username": "adminuser",
+  "password": "AdminPass123"
+}
+
+###
+
+### 3. Get All Users
+GET http://localhost:8000/auth/users
+Authorization: Bearer {{JWT_TOKEN}}
