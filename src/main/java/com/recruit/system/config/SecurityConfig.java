@@ -28,6 +28,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/register", "/auth/login").permitAll()
                         .requestMatchers("/auth/users").hasAuthority("APPLICANT")
+                        .requestMatchers("/jobs/all","/jobs/create").permitAll()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session
