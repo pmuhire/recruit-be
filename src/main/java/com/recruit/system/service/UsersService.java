@@ -42,13 +42,14 @@ public class UsersService {
     public AuthResponse register(RegisterRequest request) {
         String username = request.getUsername().trim().toLowerCase();
         String email = request.getEmail().trim().toLowerCase();
+
         // Check duplicates
         if (usersRepository.existsByUsername(username)) {
-            return new AuthResponse(false, "Username already exists", null);
+            return new AuthResponse(false, "Username already exists", null, null, null);
         }
 
         if (usersRepository.existsByEmail(email)) {
-            return new AuthResponse(false, "Email already exists", null);
+            return new AuthResponse(false, "Email already exists", null, null, null);
         }
 
         // Fetch default role
@@ -56,8 +57,9 @@ public class UsersService {
                 .orElse(null);
 
         if (role == null) {
-            return new AuthResponse(false, "Default role not found. Please contact admin.", null);
+            return new AuthResponse(false, "Default role not found. Please contact admin.", null, null, null);
         }
+
         // Create user
         Users user = new Users();
         user.setUsername(username);
@@ -66,25 +68,30 @@ public class UsersService {
         user.setRole(role);
 
         usersRepository.save(user);
+
+        // Generate JWT token
         String token = jwtService.generateToken(user.getUsername());
-        return new AuthResponse(true, "User registered successfully", token);
+
+        // Return response with username, role, and token
+        return new AuthResponse(true, "User registered successfully", token, user.getUsername(), user.getRole().getName());
     }
 
     public AuthResponse login(LoginRequest request) {
 
-        // Authenticate email/password
+        // Authenticate username/email & password
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
         );
 
-        // Fetch user from DB using email
+        // Fetch user from database
         Users user = usersRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
-        // Generate JWT token using email as subject
-        String token = jwtService.generateToken(user.getEmail());
+        // Generate JWT token
+        String token = jwtService.generateToken(user.getUsername());
 
-        return new AuthResponse(true, "Login successful", token);
+        // Return response with username, role, and token
+        return new AuthResponse(true, "Login successful", token, user.getUsername(), user.getRole().getName());
     }
 
     // ✅ Read all users (response safe, no passwords)
