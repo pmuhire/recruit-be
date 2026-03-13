@@ -2,10 +2,13 @@ package com.recruit.system.security;
 
 import com.recruit.system.model.Users;
 import com.recruit.system.repository.UserRepository;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
@@ -18,9 +21,14 @@ public class CustomUserDetailsService implements UserDetailsService {
     }
 
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        Users user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
-        return new CustomUserDetails(user);
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        Users user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
+
+        return new org.springframework.security.core.userdetails.User(
+                user.getEmail(), // <-- email used as username
+                user.getPassword(),
+                List.of(new SimpleGrantedAuthority(user.getRole().getName()))
+        );
     }
 }

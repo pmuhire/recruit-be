@@ -70,20 +70,19 @@ public class UsersService {
         return new AuthResponse(true, "User registered successfully", token);
     }
 
-    // ✅ Login user
     public AuthResponse login(LoginRequest request) {
 
-        // Authenticate username/password
+        // Authenticate email/password
         authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
+                new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
         );
 
-        // Fetch user from database
-        Users user = usersRepository.findByUsername(request.getUsername())
+        // Fetch user from DB using email
+        Users user = usersRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
-        // Generate JWT token
-        String token = jwtService.generateToken(user.getUsername());
+        // Generate JWT token using email as subject
+        String token = jwtService.generateToken(user.getEmail());
 
         return new AuthResponse(true, "Login successful", token);
     }
