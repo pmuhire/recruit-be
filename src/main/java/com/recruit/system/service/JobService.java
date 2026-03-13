@@ -18,8 +18,8 @@ public class JobService {
         this.jobRepository = jobRepository;
     }
 
-    // Create job
     public JobResponse createJob(JobRequest request) {
+
         Job job = new Job();
         job.setTitle(request.getTitle());
         job.setDescription(request.getDescription());
@@ -31,23 +31,42 @@ public class JobService {
         return mapToResponse(saved);
     }
 
-    // Get all jobs
     public List<JobResponse> getAllJobs() {
+
         return jobRepository.findAll()
                 .stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
     }
 
-    // Helper to map entity to DTO
     private JobResponse mapToResponse(Job job) {
+
         JobResponse response = new JobResponse();
+
         response.setId(job.getId());
         response.setTitle(job.getTitle());
         response.setDescription(job.getDescription());
         response.setRequirements(job.getRequirements());
         response.setStatus(job.getStatus());
         response.setCreatedAt(job.getCreatedAt());
+
         return response;
+    }
+    public JobResponse closeJob(Long jobId) {
+
+        Job job = jobRepository.findById(jobId)
+                .orElseThrow(() -> new IllegalArgumentException("Job not found"));
+
+        job.setStatus(Job.Status.CLOSED);
+
+        Job saved = jobRepository.save(job);
+
+        return mapToResponse(saved);
+    }
+    public JobResponse getJob(Long jobId) {
+        Job job = jobRepository.findById(jobId)
+                .orElseThrow(() -> new IllegalArgumentException("Job not found with id: " + jobId));
+
+        return mapToResponse(job);
     }
 }

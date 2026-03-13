@@ -2,18 +2,24 @@ package com.recruit.system.dto.request;
 
 public class ApplicationSubmitRequest {
 
-    private Long applicantId;
+    private Long userId;
+    private Long jobId;
 
-    // Default constructor
-    public ApplicationSubmitRequest() {
+    public ApplicationSubmitRequest() {}
+
+    public Long getUserId() {
+        return userId;
     }
 
-    // Getter and Setter
-    public Long getApplicantId() {
-        return applicantId;
+    public Long getJobId() {
+        return jobId;
     }
 
-    public void setApplicantId(Long applicantId) {
-        this.applicantId = applicantId;
+    public void setUserId(Long userId) {
+        this.userId = userId;
+    }
+
+    public void setJobId(Long jobId) {
+        this.jobId = jobId;
     }
 }

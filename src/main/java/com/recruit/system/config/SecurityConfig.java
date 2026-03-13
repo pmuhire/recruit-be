@@ -27,8 +27,14 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/register", "/auth/login").permitAll()
-                        .requestMatchers("/auth/users").hasAuthority("APPLICANT")
-                        .requestMatchers("/jobs/all","/jobs/create").permitAll()
+                        .requestMatchers("/auth/me").authenticated()
+                        .requestMatchers("/auth/users").hasAnyAuthority("HR", "SUPERADMIN")
+                        .requestMatchers("/jobs/all", "/jobs/{id}").permitAll()
+                        .requestMatchers("/jobs/create", "/jobs/{jobId}/close").hasAnyAuthority("HR", "SUPERADMIN")
+                        .requestMatchers("/api/applications/my").hasAuthority("APPLICANT")
+                        .requestMatchers("/api/applications").hasAnyAuthority("HR", "SUPERADMIN") // view all
+                        .requestMatchers("/api/applications/job/**").hasAnyAuthority("HR", "SUPERADMIN")
+                        .requestMatchers("/api/applications/{id}/approve", "/api/applications/{id}/reject").hasAnyAuthority("HR", "SUPERADMIN")
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session

@@ -1,9 +1,10 @@
 package com.recruit.system.controller;
 
 import com.recruit.system.dto.request.JobRequest;
+import com.recruit.system.dto.response.ApiResponse;
 import com.recruit.system.dto.response.JobResponse;
 import com.recruit.system.service.JobService;
-import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,17 +19,33 @@ public class JobController {
         this.jobService = jobService;
     }
 
-    // HR creates a job
+    // HR/SUPERADMIN: create job
+    @PreAuthorize("hasAnyAuthority('HR','SUPERADMIN')")
     @PostMapping("/create")
-    public ResponseEntity<JobResponse> createJob(@RequestBody JobRequest request) {
+    public ApiResponse<JobResponse> createJob(@RequestBody JobRequest request) {
         JobResponse response = jobService.createJob(request);
-        return ResponseEntity.ok(response);
+        return new ApiResponse<>(true, "Job created successfully", response);
     }
 
-    // Get all jobs
+    // Get all jobs (public)
     @GetMapping("/all")
-    public ResponseEntity<List<JobResponse>> getAllJobs() {
+    public ApiResponse<List<JobResponse>> getAllJobs() {
         List<JobResponse> jobs = jobService.getAllJobs();
-        return ResponseEntity.ok(jobs);
+        return new ApiResponse<>(true, "Jobs retrieved successfully", jobs);
+    }
+
+    // Get single job (public)
+    @GetMapping("/{jobId}")
+    public ApiResponse<JobResponse> getJob(@PathVariable Long jobId) {
+        JobResponse response = jobService.getJob(jobId);
+        return new ApiResponse<>(true, "Job retrieved successfully", response);
+    }
+
+    // HR/SUPERADMIN: close job
+    @PreAuthorize("hasAnyAuthority('HR','SUPERADMIN')")
+    @PatchMapping("/{jobId}/close")
+    public ApiResponse<JobResponse> closeJob(@PathVariable Long jobId) {
+        JobResponse response = jobService.closeJob(jobId);
+        return new ApiResponse<>(true, "Job closed successfully", response);
     }
 }

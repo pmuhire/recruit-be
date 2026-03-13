@@ -4,99 +4,78 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "applications")
+@Table(
+        name = "applications",
+        uniqueConstraints = {
+                @UniqueConstraint(columnNames = {"user_id", "job_id"})
+        }
+)
 public class Application {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "applicant_id")
-    private Applicant applicant;
+    private Long userId;
 
-    private String status;
+    @ManyToOne
+    @JoinColumn(name = "job_id")
+    private Job job;
+
+    @Enumerated(EnumType.STRING)
+    private ApplicationStatus status;
 
     private String reviewReason;
 
     private LocalDateTime submittedAt;
 
-    @ManyToOne
-    @JoinColumn(name = "reviewed_by")
-    private Users reviewedBy;
+    public Application() {}
 
-    private LocalDateTime reviewedAt;
-
-    // Default constructor
-    public Application() {
-    }
-
-    // Full constructor
-    public Application(Long id, Applicant applicant, String status, String reviewReason,
-                       LocalDateTime submittedAt, Users reviewedBy, LocalDateTime reviewedAt) {
-        this.id = id;
-        this.applicant = applicant;
-        this.status = status;
-        this.reviewReason = reviewReason;
-        this.submittedAt = submittedAt;
-        this.reviewedBy = reviewedBy;
-        this.reviewedAt = reviewedAt;
-    }
-
-    // Getters and Setters
     public Long getId() {
         return id;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public Long getUserId() {
+        return userId;
     }
 
-    public Applicant getApplicant() {
-        return applicant;
+    public Job getJob() {
+        return job;
     }
 
-    public void setApplicant(Applicant applicant) {
-        this.applicant = applicant;
-    }
-
-    public String getStatus() {
+    public ApplicationStatus getStatus() {
         return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
     }
 
     public String getReviewReason() {
         return reviewReason;
     }
 
-    public void setReviewReason(String reviewReason) {
-        this.reviewReason = reviewReason;
-    }
-
     public LocalDateTime getSubmittedAt() {
         return submittedAt;
     }
 
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
+    }
+
+    public void setJob(Job job) {
+        this.job = job;
+    }
+
+    public void setStatus(ApplicationStatus status) {
+        this.status = status;
+    }
+
+    public void setReviewReason(String reviewReason) {
+        this.reviewReason = reviewReason;
+    }
+
     public void setSubmittedAt(LocalDateTime submittedAt) {
         this.submittedAt = submittedAt;
-    }
-
-    public Users getReviewedBy() {
-        return reviewedBy;
-    }
-
-    public void setReviewedBy(Users reviewedBy) {
-        this.reviewedBy = reviewedBy;
-    }
-
-    public LocalDateTime getReviewedAt() {
-        return reviewedAt;
-    }
-
-    public void setReviewedAt(LocalDateTime reviewedAt) {
-        this.reviewedAt = reviewedAt;
     }
 }

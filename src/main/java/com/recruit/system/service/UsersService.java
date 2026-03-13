@@ -9,6 +9,8 @@ import com.recruit.system.model.Users;
 import com.recruit.system.repository.RoleRepository;
 import com.recruit.system.repository.UserRepository;
 import com.recruit.system.security.JwtService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -18,7 +20,7 @@ import java.util.stream.Collectors;
 
 @Service
 public class UsersService {
-
+    private static final Logger logger = LoggerFactory.getLogger(UsersService.class);
     private final UserRepository usersRepository;
     private final RoleRepository rolesRepository;
     private final JwtService jwtService;
@@ -37,29 +39,26 @@ public class UsersService {
         this.authenticationManager = authenticationManager;
     }
 
-    // ✅ Register a new user
     public AuthResponse register(RegisterRequest request) {
-
-        // Normalize input
         String username = request.getUsername().trim().toLowerCase();
         String email = request.getEmail().trim().toLowerCase();
-
         // Check duplicates
         if (usersRepository.existsByUsername(username)) {
-            throw new IllegalArgumentException("Username already exists");
+            return new AuthResponse(false, "Username already exists", null);
         }
 
         if (usersRepository.existsByEmail(email)) {
-            throw new IllegalArgumentException("Email already exists");
+            return new AuthResponse(false, "Email already exists", null);
         }
 
-        // Assign default role safely (never trust client for roles)
-        String roleName = "APPLICANT"; // Default role for new users
+        // Fetch default role
+        Roles role = rolesRepository.findByName("APPLICANT")
+                .orElse(null);
 
-        Roles role = rolesRepository.findByName(roleName)
-                .orElseThrow(() -> new IllegalStateException("Default role not found"));
-
-        // Create user entity
+        if (role == null) {
+            return new AuthResponse(false, "Default role not found. Please contact admin.", null);
+        }
+        // Create user
         Users user = new Users();
         user.setUsername(username);
         user.setEmail(email);
@@ -67,10 +66,7 @@ public class UsersService {
         user.setRole(role);
 
         usersRepository.save(user);
-
-        // Generate JWT token
         String token = jwtService.generateToken(user.getUsername());
-
         return new AuthResponse(true, "User registered successfully", token);
     }
 
