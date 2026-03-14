@@ -62,7 +62,7 @@ public class SecurityConfig {
         // Allowed origins (update with your frontend URL)
         configuration.setAllowedOrigins(List.of(
                 "http://localhost:3000",
-                "https://recruit-fe-production.up.railway.app"
+                "https://recruit-fe.vercel.app"
         ));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
