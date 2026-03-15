@@ -39,7 +39,7 @@ public class SecurityConfig {
                         .requestMatchers("/jobs/all", "/jobs/{id}").permitAll()
                         .requestMatchers("/jobs/create", "/jobs/{jobId}/close").hasAnyAuthority("HR", "SUPERADMIN")
                         .requestMatchers("/api/applications/my").hasAuthority("APPLICANT")
-                        .requestMatchers("/api/applications")// view all
+                        .requestMatchers("/api/applications").authenticated()// view all
                         .requestMatchers("/api/applications/job/**").hasAnyAuthority("HR", "SUPERADMIN")
                         .requestMatchers("/api/applications/{id}/approve", "/api/applications/{id}/reject").hasAnyAuthority("HR", "SUPERADMIN")
                         .anyRequest().authenticated()
