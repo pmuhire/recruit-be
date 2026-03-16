@@ -34,14 +34,15 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/register", "/auth/login").permitAll()
+                        .requestMatchers("/auth/create-hr").hasRole("SUPERADMIN")
                         .requestMatchers("/auth/me").authenticated()
-                        .requestMatchers("/auth/users").hasAnyAuthority("HR", "SUPERADMIN")
+                        .requestMatchers("/auth/users").hasAnyRole("HR", "SUPERADMIN")
                         .requestMatchers("/jobs/all", "/jobs/{id}").permitAll()
-                        .requestMatchers("/jobs/create", "/jobs/{jobId}/close").hasAnyAuthority("HR", "SUPERADMIN")
+                        .requestMatchers("/jobs/create", "/jobs/{jobId}/close").hasAnyRole("HR", "SUPERADMIN")
                         .requestMatchers("/api/applications/my").hasAuthority("APPLICANT")
-                        .requestMatchers("/api/applications").permitAll()// view all
-                        .requestMatchers("/api/applications/job/**").hasAnyAuthority("HR", "SUPERADMIN")
-                        .requestMatchers("/api/applications/{id}/approve", "/api/applications/{id}/reject").hasAnyAuthority("HR", "SUPERADMIN")
+                        .requestMatchers("/api/applications").hasAnyRole("HR", "SUPERADMIN")// view all
+                        .requestMatchers("/api/applications/job/**").hasAnyRole("HR", "SUPERADMIN")
+                        .requestMatchers("/api/applications/{id}/approve", "/api/applications/{id}/reject").hasAnyRole("HR", "SUPERADMIN")
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session

@@ -5,7 +5,9 @@ import com.recruit.system.dto.request.RegisterRequest;
 import com.recruit.system.dto.response.AuthResponse;
 import com.recruit.system.dto.response.UserResponse;
 import com.recruit.system.service.UsersService;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
 @RestController
@@ -29,7 +31,14 @@ public class AuthController {
     }
 
     @GetMapping("/users")
+    @PreAuthorize("hasRole('HR') or hasRole('ADMIN')")
     public List<UserResponse> getAllUsers() {
         return userService.getAllUsers();
+    }
+
+    @PostMapping("/create-hr")
+    @PreAuthorize("hasRole('ADMIN')")
+    public AuthResponse createHR(@RequestBody RegisterRequest request) {
+        return userService.createHR(request);
     }
 }

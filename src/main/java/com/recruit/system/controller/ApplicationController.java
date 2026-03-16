@@ -51,7 +51,7 @@ public class ApplicationController {
     }
 
     // HR/SUPERADMIN: Get all applications
-    // @PreAuthorize("hasAnyAuthority('HR','SUPERADMIN')")
+     @PreAuthorize("hasAnyAuthority('HR','SUPERADMIN')")
     @GetMapping
     public ApiResponse<List<ApplicationResponse>> getAllApplications() {
         List<ApplicationResponse> applications = service.getAllApplications();
