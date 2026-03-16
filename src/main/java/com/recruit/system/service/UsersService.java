@@ -92,7 +92,7 @@ public class UsersService {
     public List<UserResponse> getAllUsers() {
         return usersRepository.findAll()
                 .stream()
-                .map(user -> new UserResponse(user.getId(), user.getUsername(), user.getEmail(), user.getRole().getName()))
+                .map(user -> new UserResponse(user.getId(), user.getUsername(), user.getEmail(), user.getRole()))
                 .collect(Collectors.toList());
     }
 }

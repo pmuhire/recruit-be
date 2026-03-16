@@ -1,27 +1,22 @@
 package com.recruit.system.mapper;
 
-import com.recruit.system.dto.request.ApplicationSubmitRequest;
-import com.recruit.system.dto.response.ApplicationResponse;
+import com.recruit.system.dto.response.*;
 import com.recruit.system.model.Application;
-import com.recruit.system.model.ApplicationStatus;
-import com.recruit.system.model.Job;
+import com.recruit.system.model.Document;
+import com.recruit.system.model.Users;
+import com.recruit.system.repository.UserRepository;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 public class ApplicationMapper {
 
-    public Application toEntity(ApplicationSubmitRequest request, Job job) {
+    private final UserRepository userRepository;
 
-        Application application = new Application();
-
-        application.setUserId(request.getUserId());
-        application.setJob(job);
-        application.setStatus(ApplicationStatus.PENDING);
-        application.setSubmittedAt(LocalDateTime.now());
-
-        return application;
+    public ApplicationMapper(UserRepository userRepository) {
+        this.userRepository = userRepository;
     }
 
     public ApplicationResponse toResponse(Application application) {
@@ -29,9 +24,22 @@ public class ApplicationMapper {
         ApplicationResponse response = new ApplicationResponse();
 
         response.setId(application.getId());
-        response.setUserId(application.getUserId());
 
-        if(application.getJob() != null){
+        // ⭐ Fetch user
+        Users user = userRepository.findById(application.getUserId()).orElse(null);
+
+        if (user != null) {
+            UserResponse userResponse = new UserResponse(
+                    user.getId(),
+                    user.getUsername(),
+                    user.getEmail(),
+                    user.getRole()
+
+            );
+            response.setUser(userResponse);
+        }
+
+        if (application.getJob() != null) {
             response.setJobId(application.getJob().getId());
             response.setJobTitle(application.getJob().getTitle());
         }
@@ -40,6 +48,29 @@ public class ApplicationMapper {
         response.setReviewReason(application.getReviewReason());
         response.setSubmittedAt(application.getSubmittedAt());
 
+        // Documents
+        List<DocumentResponse> docs = application.getDocuments()
+                .stream()
+                .map(this::mapDocument)
+                .collect(Collectors.toList());
+
+        response.setDocuments(docs);
+
         return response;
+    }
+
+    private DocumentResponse mapDocument(Document document) {
+
+        DocumentResponse res = new DocumentResponse();
+
+        res.setId(document.getId());
+        res.setFileName(document.getFileName());
+        res.setFileUrl(document.getFileUrl());
+        res.setUploadedAt(document.getUploadedAt());
+
+        res.setSuccess(true);
+        res.setMessage("Document retrieved");
+
+        return res;
     }
 }

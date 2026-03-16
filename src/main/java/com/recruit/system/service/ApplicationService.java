@@ -68,7 +68,7 @@ public class ApplicationService {
 
     public List<ApplicationResponse> getAllApplications() {
 
-        return applicationRepository.findAll()
+        return applicationRepository.findAllWithDocuments()
                 .stream()
                 .map(mapper::toResponse)
                 .collect(Collectors.toList());
