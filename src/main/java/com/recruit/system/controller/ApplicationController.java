@@ -41,7 +41,6 @@ public class ApplicationController {
     public ApiResponse<ApplicationResponse> approveApplication(
             @PathVariable Long id,
             @RequestParam(required = false) String reviewReason) {
-
         ApplicationResponse response = service.reviewApplication(id, ApplicationStatus.APPROVED, reviewReason);
         return new ApiResponse<>(true, "Application approved", response);
     }
@@ -85,7 +84,6 @@ public class ApplicationController {
     @GetMapping("/user")
     public ApiResponse<List<ApplicationResponse>> getApplicationsByUser(
             @RequestParam Long userId) {
-
         List<ApplicationResponse> applications = service.getApplicationsByUser(userId);
         return new ApiResponse<>(true, "Applications retrieved successfully for user", applications);
     }
