@@ -51,11 +51,11 @@ public class UsersService {
         String email = request.getEmail().trim().toLowerCase();
 
         if (usersRepository.existsByUsername(username)) {
-            return new AuthResponse(false, "Username already exists", null, null, null);
+            return new AuthResponse(false, "Username already exists", null, null, null, null);
         }
 
         if (usersRepository.existsByEmail(email)) {
-            return new AuthResponse(false, "Email already exists", null, null, null);
+            return new AuthResponse(false, "Email already exists", null, null, null, null);
         }
 
         Roles role = rolesRepository.findByName(roleName)
@@ -71,7 +71,8 @@ public class UsersService {
 
         String token = jwtService.generateToken(user.getEmail());
 
-        return new AuthResponse(true, roleName + " created successfully", token, user.getUsername(), user.getRole().getName());
+        // Now we return userId as part of the AuthResponse
+        return new AuthResponse(true, roleName + " created successfully", token, user.getUsername(), user.getRole().getName(), user.getId());
     }
 
     public AuthResponse login(LoginRequest request) {
@@ -84,7 +85,8 @@ public class UsersService {
 
         String token = jwtService.generateToken(user.getEmail());
 
-        return new AuthResponse(true, "Login successful", token, user.getUsername(), user.getRole().getName());
+        // Returning the AuthResponse with userId
+        return new AuthResponse(true, "Login successful", token, user.getUsername(), user.getRole().getName(), user.getId());
     }
 
     public List<UserResponse> getAllUsers() {

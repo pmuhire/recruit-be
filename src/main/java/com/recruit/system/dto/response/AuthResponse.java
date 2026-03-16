@@ -7,15 +7,19 @@ public class AuthResponse {
     private String token;
     private String username;
     private String role;
+    private Long userId;  // Add userId field
 
+    // Default constructor
     public AuthResponse() {}
 
-    public AuthResponse(boolean success, String message, String token, String username, String role) {
+    // Constructor to initialize all fields
+    public AuthResponse(boolean success, String message, String token, String username, String role, Long userId) {
         this.success = success;
         this.message = message;
         this.token = token;
         this.username = username;
         this.role = role;
+        this.userId = userId;  // Set the userId
     }
 
     // Getters and Setters
@@ -33,4 +37,7 @@ public class AuthResponse {
 
     public String getRole() { return role; }
     public void setRole(String role) { this.role = role; }
+
+    public Long getUserId() { return userId; }  // Getter for userId
+    public void setUserId(Long userId) { this.userId = userId; }  // Setter for userId
 }
