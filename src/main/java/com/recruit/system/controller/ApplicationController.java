@@ -80,4 +80,13 @@ public class ApplicationController {
         List<ApplicationResponse> applications = service.getApplicationsByJob(jobId);
         return new ApiResponse<>(true, "Applications retrieved for job", applications);
     }
+
+    @PreAuthorize("hasAuthority('APPLICANT')")
+    @GetMapping("/user")
+    public ApiResponse<List<ApplicationResponse>> getApplicationsByUser(
+            @RequestParam Long userId) {
+
+        List<ApplicationResponse> applications = service.getApplicationsByUser(userId);
+        return new ApiResponse<>(true, "Applications retrieved successfully for user", applications);
+    }
 }
