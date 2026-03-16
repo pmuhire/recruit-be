@@ -31,18 +31,25 @@ public class DocumentService {
     }
     public DocumentResponse uploadDocumentForApplication(Application application, MultipartFile file) {
         try {
+            // Upload file to Cloudinary
             Map uploadResult = cloudinary.uploader().upload(file.getBytes(), ObjectUtils.asMap(
                     "resource_type", "auto",
-                    "folder", "applications/" + application.getId() // may be null before saving
+                    "folder", "applications/" + application.getId()
             ));
 
             String fileUrl = (String) uploadResult.get("secure_url");
 
+            // Create document and associate with the application
             Document document = new Document();
             document.setFileName(file.getOriginalFilename());
             document.setFileUrl(fileUrl);
             document.setUploadedAt(LocalDateTime.now());
+
+            // Add document to the application (this handles the bidirectional relationship)
             application.addDocument(document);
+
+            // Save document before saving the application (or rely on cascade)
+            documentRepository.save(document); // Save document separately if needed
 
             return new DocumentResponse(true, "CV uploaded successfully",
                     document.getId(), document.getFileName(), document.getFileUrl(), document.getUploadedAt());

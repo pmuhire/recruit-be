@@ -10,6 +10,7 @@ import com.recruit.system.model.Document;
 import com.recruit.system.model.Job;
 import com.recruit.system.repository.ApplicationRepository;
 import com.recruit.system.repository.JobRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -34,12 +35,15 @@ public class ApplicationService {
         this.documentService = documentService;
     }
 
+    @Transactional
     public ApplicationResponse apply(Long userId, Long jobId, MultipartFile cvFile) {
 
+        // Check if the user has already applied to the job
         if(applicationRepository.existsByUserIdAndJobId(userId, jobId)) {
             throw new IllegalArgumentException("You have already applied to this job");
         }
 
+        // Fetch job and create new application
         Job job = jobRepository.findById(jobId)
                 .orElseThrow(() -> new IllegalArgumentException("Job not found"));
 
@@ -49,8 +53,15 @@ public class ApplicationService {
         application.setStatus(ApplicationStatus.PENDING);
         application.setSubmittedAt(LocalDateTime.now());
 
-        // Upload CV and associate with application
+        // Upload CV and associate it with the application
         DocumentResponse docResponse = documentService.uploadDocumentForApplication(application, cvFile);
+
+        if (!docResponse.isSuccess()) {
+            throw new RuntimeException("Failed to upload document: " + docResponse.getMessage());
+        }
+
+        // Save application (document is saved due to cascade)
+        applicationRepository.save(application);
 
         return mapper.toResponse(application);
     }
