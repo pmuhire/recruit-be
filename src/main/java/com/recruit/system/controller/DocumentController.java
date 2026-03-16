@@ -1,16 +1,14 @@
 package com.recruit.system.controller;
 
-import com.recruit.system.model.Application;
-import com.recruit.system.model.Document;
+import com.recruit.system.dto.response.DocumentResponse;
 import com.recruit.system.service.DocumentService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-
 @RestController
-@RequestMapping("/documents")
+@RequestMapping("/api/documents")
 public class DocumentController {
 
     private final DocumentService documentService;
@@ -20,18 +18,19 @@ public class DocumentController {
     }
 
     @PostMapping("/upload/{applicationId}")
-    public ResponseEntity<Document> upload(@PathVariable Long applicationId,
-                                           @RequestParam("file") MultipartFile file) throws IOException {
-        Application app = new Application(); // Fetch application by ID from repo
-        app.setId(applicationId);
+    @PreAuthorize("hasAnyRole('APPLICANT','HR')")
+    public ResponseEntity<DocumentResponse> uploadDocument(
+            @PathVariable Long applicationId,
+            @RequestParam("file") MultipartFile file) {
 
-        Document doc = documentService.uploadDocument(file, app);
-        return ResponseEntity.ok(doc);
+        DocumentResponse response = documentService.uploadDocument(applicationId, file);
+        return ResponseEntity.status(response.isSuccess() ? 200 : 400).body(response);
     }
 
-    @GetMapping("/download/{id}")
-    public ResponseEntity<String> download(@PathVariable Long id) {
-        String url = documentService.downloadDocument(id);
-        return ResponseEntity.ok(url); // Returns the Cloudinary URL
+    @GetMapping("/{documentId}")
+    @PreAuthorize("hasAnyRole('APPLICANT','HR')")
+    public ResponseEntity<DocumentResponse> getDocument(@PathVariable Long documentId) {
+        DocumentResponse response = documentService.getDocument(documentId);
+        return ResponseEntity.status(response.isSuccess() ? 200 : 404).body(response);
     }
 }
