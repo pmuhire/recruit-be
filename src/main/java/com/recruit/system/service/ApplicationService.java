@@ -2,14 +2,18 @@ package com.recruit.system.service;
 
 import com.recruit.system.dto.request.ApplicationSubmitRequest;
 import com.recruit.system.dto.response.ApplicationResponse;
+import com.recruit.system.dto.response.DocumentResponse;
 import com.recruit.system.mapper.ApplicationMapper;
 import com.recruit.system.model.Application;
 import com.recruit.system.model.ApplicationStatus;
+import com.recruit.system.model.Document;
 import com.recruit.system.model.Job;
 import com.recruit.system.repository.ApplicationRepository;
 import com.recruit.system.repository.JobRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -19,33 +23,36 @@ public class ApplicationService {
     private final ApplicationRepository applicationRepository;
     private final JobRepository jobRepository;
     private final ApplicationMapper mapper;
-
+    private final DocumentService documentService;
     public ApplicationService(ApplicationRepository applicationRepository,
                               JobRepository jobRepository,
-                              ApplicationMapper mapper) {
+                              ApplicationMapper mapper,
+                              DocumentService documentService) {
         this.applicationRepository = applicationRepository;
         this.jobRepository = jobRepository;
         this.mapper = mapper;
+        this.documentService = documentService;
     }
 
-    public ApplicationResponse apply(ApplicationSubmitRequest request) {
+    public ApplicationResponse apply(Long userId, Long jobId, MultipartFile cvFile) {
 
-        // Prevent duplicate application
-        if(applicationRepository.existsByUserIdAndJobId(
-                request.getUserId(),
-                request.getJobId())) {
-
+        if(applicationRepository.existsByUserIdAndJobId(userId, jobId)) {
             throw new IllegalArgumentException("You have already applied to this job");
         }
 
-        Job job = jobRepository.findById(request.getJobId())
+        Job job = jobRepository.findById(jobId)
                 .orElseThrow(() -> new IllegalArgumentException("Job not found"));
 
-        Application application = mapper.toEntity(request, job);
+        Application application = new Application();
+        application.setUserId(userId);
+        application.setJob(job);
+        application.setStatus(ApplicationStatus.PENDING);
+        application.setSubmittedAt(LocalDateTime.now());
 
-        Application saved = applicationRepository.save(application);
+        // Upload CV and associate with application
+        DocumentResponse docResponse = documentService.uploadDocumentForApplication(application, cvFile);
 
-        return mapper.toResponse(saved);
+        return mapper.toResponse(application);
     }
 
     public List<ApplicationResponse> getAllApplications() {

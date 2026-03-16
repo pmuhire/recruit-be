@@ -29,14 +29,42 @@ public class DocumentService {
         this.documentRepository = documentRepository;
         this.applicationRepository = applicationRepository;
     }
+    public DocumentResponse uploadDocumentForApplication(Application application, MultipartFile file) {
+        try {
+            Map uploadResult = cloudinary.uploader().upload(file.getBytes(), ObjectUtils.asMap(
+                    "resource_type", "auto",
+                    "folder", "applications/" + application.getId() // may be null before saving
+            ));
 
+            String fileUrl = (String) uploadResult.get("secure_url");
+
+            Document document = new Document();
+            document.setFileName(file.getOriginalFilename());
+            document.setFileUrl(fileUrl);
+            document.setUploadedAt(LocalDateTime.now());
+            application.addDocument(document);
+
+            return new DocumentResponse(true, "CV uploaded successfully",
+                    document.getId(), document.getFileName(), document.getFileUrl(), document.getUploadedAt());
+
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to upload CV: " + e.getMessage());
+        }
+    }
+    /**
+     * Upload a document (CV) and associate it with an application.
+     * Ensures that the document is linked to the application's documents list.
+     */
     public DocumentResponse uploadDocument(Long applicationId, MultipartFile file) {
         Optional<Application> appOpt = applicationRepository.findById(applicationId);
         if (appOpt.isEmpty()) {
             return new DocumentResponse(false, "Application not found", null, null, null, null);
         }
 
+        Application application = appOpt.get();
+
         try {
+            // Upload file to Cloudinary
             Map uploadResult = cloudinary.uploader().upload(file.getBytes(), ObjectUtils.asMap(
                     "resource_type", "auto",
                     "folder", "applications/" + applicationId
@@ -44,21 +72,23 @@ public class DocumentService {
 
             String fileUrl = (String) uploadResult.get("secure_url");
 
-            Document doc = new Document();
-            doc.setApplication(appOpt.get());
-            doc.setFileName(file.getOriginalFilename());
-            doc.setFileUrl(fileUrl);
-            doc.setUploadedAt(LocalDateTime.now());
+            // Create document and set bidirectional relationship
+            Document document = new Document();
+            document.setFileName(file.getOriginalFilename());
+            document.setFileUrl(fileUrl);
+            document.setUploadedAt(LocalDateTime.now());
+            application.addDocument(document); // automatically sets document.application
 
-            Document saved = documentRepository.save(doc);
+            // Save the application, cascade will save the document
+            applicationRepository.save(application);
 
             return new DocumentResponse(
                     true,
                     "File uploaded successfully",
-                    saved.getId(),
-                    saved.getFileName(),
-                    saved.getFileUrl(),
-                    saved.getUploadedAt()
+                    document.getId(),
+                    document.getFileName(),
+                    document.getFileUrl(),
+                    document.getUploadedAt()
             );
 
         } catch (IOException e) {
@@ -66,6 +96,9 @@ public class DocumentService {
         }
     }
 
+    /**
+     * Retrieve a document by its ID
+     */
     public DocumentResponse getDocument(Long documentId) {
         Optional<Document> docOpt = documentRepository.findById(documentId);
         if (docOpt.isEmpty()) {
@@ -80,6 +113,33 @@ public class DocumentService {
                 doc.getFileName(),
                 doc.getFileUrl(),
                 doc.getUploadedAt()
+        );
+    }
+
+    /**
+     * Optional: Remove a document from an application
+     */
+    public DocumentResponse deleteDocument(Long documentId) {
+        Optional<Document> docOpt = documentRepository.findById(documentId);
+        if (docOpt.isEmpty()) {
+            return new DocumentResponse(false, "Document not found", null, null, null, null);
+        }
+
+        Document document = docOpt.get();
+        Application application = document.getApplication();
+
+        if (application != null) {
+            application.removeDocument(document); // removes from list and nulls relationship
+            applicationRepository.save(application); // cascades removal
+        }
+
+        return new DocumentResponse(
+                true,
+                "Document deleted successfully",
+                document.getId(),
+                document.getFileName(),
+                document.getFileUrl(),
+                document.getUploadedAt()
         );
     }
 }

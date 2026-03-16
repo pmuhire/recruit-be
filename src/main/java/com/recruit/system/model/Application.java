@@ -2,6 +2,8 @@ package com.recruit.system.model;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(
@@ -29,8 +31,12 @@ public class Application {
 
     private LocalDateTime submittedAt;
 
+    @OneToMany(mappedBy = "application", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Document> documents = new ArrayList<>();
+
     public Application() {}
 
+    // ---------- Getters ----------
     public Long getId() {
         return id;
     }
@@ -55,6 +61,11 @@ public class Application {
         return submittedAt;
     }
 
+    public List<Document> getDocuments() {
+        return documents;
+    }
+
+    // ---------- Setters ----------
     public void setId(Long id) {
         this.id = id;
     }
@@ -77,5 +88,20 @@ public class Application {
 
     public void setSubmittedAt(LocalDateTime submittedAt) {
         this.submittedAt = submittedAt;
+    }
+
+    public void setDocuments(List<Document> documents) {
+        this.documents = documents;
+    }
+
+    // ---------- Helper Methods ----------
+    public void addDocument(Document document) {
+        documents.add(document);
+        document.setApplication(this);
+    }
+
+    public void removeDocument(Document document) {
+        documents.remove(document);
+        document.setApplication(null);
     }
 }

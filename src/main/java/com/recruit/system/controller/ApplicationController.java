@@ -7,6 +7,7 @@ import com.recruit.system.model.ApplicationStatus;
 import com.recruit.system.service.ApplicationService;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -22,9 +23,15 @@ public class ApplicationController {
 
     // Applicant applies to a job
     @PreAuthorize("hasAuthority('APPLICANT')")
-    @PostMapping
-    public ApiResponse<ApplicationResponse> apply(@RequestBody ApplicationSubmitRequest request) {
-        ApplicationResponse response = service.apply(request);
+    @PostMapping("/apply")
+    public ApiResponse<ApplicationResponse> apply(
+            @RequestParam Long userId,
+            @RequestParam Long jobId,
+            @RequestParam("cvFile") MultipartFile cvFile) {
+
+        // Call service to create application with CV
+        ApplicationResponse response = service.apply(userId, jobId, cvFile);
+
         return new ApiResponse<>(true, "Application submitted successfully", response);
     }
 
