@@ -88,6 +88,25 @@ public class UsersService {
         // Returning the AuthResponse with userId
         return new AuthResponse(true, "Login successful", token, user.getUsername(), user.getRole().getName(), user.getId());
     }
+    public AuthResponse createHRWithDefaultPassword(String username, String email) {
+        String defaultPassword = "defaultPassword123";  // Define the default password
+        RegisterRequest request = new RegisterRequest();
+        request.setUsername(username.trim().toLowerCase());  // Dynamically set the username
+        request.setEmail(email.trim().toLowerCase());  // Dynamically set the email
+        request.setPassword(defaultPassword);  // Use default password
+
+        return createUser(request, "HR");
+    }
+    public AuthResponse updatePassword(Long userId, String newPassword) {
+        Users user = usersRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        // Encode the new password and set it
+        user.setPassword(passwordEncoder.encode(newPassword));
+        usersRepository.save(user);
+
+        return new AuthResponse(true, "Password updated successfully", null, null, null, user.getId());
+    }
 
     public List<UserResponse> getAllUsers() {
         return usersRepository.findAll()

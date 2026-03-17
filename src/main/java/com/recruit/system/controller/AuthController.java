@@ -41,4 +41,15 @@ public class AuthController {
     public AuthResponse createHR(@RequestBody RegisterRequest request) {
         return userService.createHR(request);
     }
+    @PostMapping("/create-hr-default")
+    @PreAuthorize("hasRole('SUPERADMIN')")
+    public AuthResponse createHRWithDefaultPassword(@RequestBody RegisterRequest request) {
+        return userService.createHRWithDefaultPassword(request.getUsername(), request.getEmail());
+    }
+
+    // New API to update HR password
+    @PutMapping("/update-password/{userId}")
+    public AuthResponse updatePassword(@PathVariable Long userId, @RequestBody String newPassword) {
+        return userService.updatePassword(userId, newPassword);
+    }
 }
