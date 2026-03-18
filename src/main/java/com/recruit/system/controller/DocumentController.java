@@ -17,20 +17,20 @@ public class DocumentController {
         this.documentService = documentService;
     }
 
-    @PostMapping("/upload/{applicationId}")
-    @PreAuthorize("hasAnyRole('APPLICANT','HR')")
-    public ResponseEntity<DocumentResponse> uploadDocument(
-            @PathVariable Long applicationId,
-            @RequestParam("file") MultipartFile file) {
-
-        DocumentResponse response = documentService.uploadDocument(applicationId, file);
-        return ResponseEntity.status(response.isSuccess() ? 200 : 400).body(response);
-    }
-
-    @GetMapping("/{documentId}")
-    @PreAuthorize("hasAnyRole('APPLICANT','HR')")
-    public ResponseEntity<DocumentResponse> getDocument(@PathVariable Long documentId) {
-        DocumentResponse response = documentService.getDocument(documentId);
-        return ResponseEntity.status(response.isSuccess() ? 200 : 404).body(response);
-    }
+//    @PostMapping("/upload/{applicationId}")
+//    @PreAuthorize("hasAnyRole('APPLICANT','HR')")
+//    public ResponseEntity<DocumentResponse> uploadDocument(
+//            @PathVariable Long applicationId,
+//            @RequestParam("file") MultipartFile file) {
+//
+//        DocumentResponse response = documentService.uploadDocument(applicationId, file);
+//        return ResponseEntity.status(response.isSuccess() ? 200 : 400).body(response);
+//    }
+//
+//    @GetMapping("/{documentId}")
+//    @PreAuthorize("hasAnyRole('APPLICANT','HR')")
+//    public ResponseEntity<DocumentResponse> getDocument(@PathVariable Long documentId) {
+//        DocumentResponse response = documentService.getDocument(documentId);
+//        return ResponseEntity.status(response.isSuccess() ? 200 : 404).body(response);
+//    }
 }

@@ -1,12 +1,14 @@
 package com.recruit.system.mapper;
 
-import com.recruit.system.dto.response.*;
+import com.recruit.system.dto.response.ApplicationResponse;
+import com.recruit.system.dto.response.DocumentResponse;
+import com.recruit.system.dto.response.UserResponse;
 import com.recruit.system.model.Application;
-import com.recruit.system.model.Document;
 import com.recruit.system.model.Users;
 import com.recruit.system.repository.UserRepository;
 import org.springframework.stereotype.Component;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -14,27 +16,25 @@ import java.util.stream.Collectors;
 public class ApplicationMapper {
 
     private final UserRepository userRepository;
+    private final DocumentMapper documentMapper;
 
-    public ApplicationMapper(UserRepository userRepository) {
+    public ApplicationMapper(UserRepository userRepository, DocumentMapper documentMapper) {
         this.userRepository = userRepository;
+        this.documentMapper = documentMapper;
     }
 
     public ApplicationResponse toResponse(Application application) {
-
         ApplicationResponse response = new ApplicationResponse();
 
         response.setId(application.getId());
 
-        // ⭐ Fetch user
         Users user = userRepository.findById(application.getUserId()).orElse(null);
-
         if (user != null) {
             UserResponse userResponse = new UserResponse(
                     user.getId(),
                     user.getUsername(),
                     user.getEmail(),
                     user.getRole()
-
             );
             response.setUser(userResponse);
         }
@@ -48,29 +48,16 @@ public class ApplicationMapper {
         response.setReviewReason(application.getReviewReason());
         response.setSubmittedAt(application.getSubmittedAt());
 
-        // Documents
-        List<DocumentResponse> docs = application.getDocuments()
-                .stream()
-                .map(this::mapDocument)
-                .collect(Collectors.toList());
+        List<DocumentResponse> documentResponses =
+                application.getDocuments() == null
+                        ? Collections.emptyList()
+                        : application.getDocuments()
+                        .stream()
+                        .map(documentMapper::toResponse)
+                        .collect(Collectors.toList());
 
-        response.setDocuments(docs);
+        response.setDocuments(documentResponses);
 
         return response;
-    }
-
-    private DocumentResponse mapDocument(Document document) {
-
-        DocumentResponse res = new DocumentResponse();
-
-        res.setId(document.getId());
-        res.setFileName(document.getFileName());
-        res.setFileUrl(document.getFileUrl());
-        res.setUploadedAt(document.getUploadedAt());
-
-        res.setSuccess(true);
-        res.setMessage("Document retrieved");
-
-        return res;
     }
 }
