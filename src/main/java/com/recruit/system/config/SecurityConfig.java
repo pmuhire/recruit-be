@@ -34,6 +34,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/register", "/auth/login").permitAll()
+                        .requestMatchers("/api/files/upload").permitAll()
                         .requestMatchers("/auth/create-hr").hasRole("SUPERADMIN")
                         .requestMatchers("/auth/me").authenticated()
                         .requestMatchers("/auth/users").hasAnyRole("HR", "SUPERADMIN")

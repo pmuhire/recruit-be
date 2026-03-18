@@ -34,16 +34,13 @@ public class ApplicationService {
         this.mapper = mapper;
         this.documentService = documentService;
     }
-
     @Transactional
     public ApplicationResponse apply(Long userId, Long jobId, MultipartFile cvFile) {
 
-        // Check if the user has already applied to the job
-        if(applicationRepository.existsByUserIdAndJobId(userId, jobId)) {
+        if (applicationRepository.existsByUserIdAndJobId(userId, jobId)) {
             throw new IllegalArgumentException("You have already applied to this job");
         }
 
-        // Fetch job and create new application
         Job job = jobRepository.findById(jobId)
                 .orElseThrow(() -> new IllegalArgumentException("Job not found"));
 
@@ -53,19 +50,17 @@ public class ApplicationService {
         application.setStatus(ApplicationStatus.PENDING);
         application.setSubmittedAt(LocalDateTime.now());
 
-        // Upload CV and associate it with the application
-        DocumentResponse docResponse = documentService.uploadDocumentForApplication(application, cvFile);
+        application = applicationRepository.save(application);
+
+        DocumentResponse docResponse =
+                documentService.uploadDocumentForApplication(application, cvFile);
 
         if (!docResponse.isSuccess()) {
-            throw new RuntimeException("Failed to upload document: " + docResponse.getMessage());
+            throw new RuntimeException("Failed to upload document");
         }
-
-        // Save application (document is saved due to cascade)
-        applicationRepository.save(application);
 
         return mapper.toResponse(application);
     }
-
     public List<ApplicationResponse> getAllApplications() {
 
         return applicationRepository.findAllWithDocuments()
