@@ -31,3 +31,9 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Docker files ###
+.dockerignore
+
+application-dev.properties
+application-test.properties
