@@ -31,3 +31,10 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Docker files ###
+.dockerignore
+
+src/main/resources/application-*.properties
+.env
+
