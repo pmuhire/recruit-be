@@ -35,5 +35,6 @@ build/
 ### Docker files ###
 .dockerignore
 
-application-dev.properties
-application-test.properties
+src/main/resources/application-*.properties
+.env
+
