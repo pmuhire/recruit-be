@@ -6,6 +6,8 @@ import com.recruit.system.model.Application;
 import com.recruit.system.model.Document;
 import com.recruit.system.repository.DocumentRepository;
 import jakarta.transaction.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -14,17 +16,19 @@ import java.time.LocalDateTime;
 @Service
 public class DocumentService {
 
+    private static final Logger log = LoggerFactory.getLogger(DocumentService.class);
+
     private final DocumentRepository documentRepository;
-    private final S3Service s3Service;
+    private final SupabaseStorageService storageService;
     private final DocumentMapper documentMapper;
 
     public DocumentService(
             DocumentRepository documentRepository,
-            S3Service s3Service,
+            SupabaseStorageService storageService,
             DocumentMapper documentMapper
     ) {
         this.documentRepository = documentRepository;
-        this.s3Service = s3Service;
+        this.storageService = storageService;
         this.documentMapper = documentMapper;
     }
 
@@ -38,17 +42,18 @@ public class DocumentService {
             throw new IllegalArgumentException("File must not be empty");
         }
 
-        String storedKey = s3Service.uploadFile(file, application.getId());
+        log.info("Uploading document for applicationId={}, originalFileName={}", application.getId(), file.getOriginalFilename());
+
+        String filePath = storageService.uploadFile(file, application.getId());
 
         Document document = new Document();
         document.setApplication(application);
         document.setFileName(file.getOriginalFilename());
-        document.setFileUrl(storedKey); // stores S3 key, not public URL
+        document.setFileKey(filePath);
         document.setUploadedAt(LocalDateTime.now());
 
         Document savedDocument = documentRepository.save(document);
-
-        application.getDocuments().add(savedDocument);
+        log.info("Document saved with id={} and fileKey={}", savedDocument.getId(), savedDocument.getFileKey());
 
         DocumentResponse response = documentMapper.toResponse(savedDocument);
         response.setSuccess(true);
@@ -57,19 +62,20 @@ public class DocumentService {
         return response;
     }
 
-    public DocumentResponse getDocumentResponse(Document document) {
-        if (document == null) {
-            throw new IllegalArgumentException("Document must not be null");
-        }
-        return documentMapper.toResponse(document);
-    }
+    public String generateDocumentViewUrlById(Long documentId) {
+        log.info("Generating document view URL for documentId={}", documentId);
 
-    public String generateDocumentViewUrl(Document document) {
-        if (document == null) {
-            throw new IllegalArgumentException("Document must not be null");
-        }
+        Document document = documentRepository.findById(documentId)
+                .orElseThrow(() -> {
+                    log.error("Document not found for id={}", documentId);
+                    return new RuntimeException("Document not found");
+                });
 
-        String key = s3Service.extractKey(document.getFileUrl());
-        return s3Service.generatePresignedUrl(key);
+        log.info("Found document id={}, fileName={}, fileKey={}", document.getId(), document.getFileName(), document.getFileKey());
+
+        String url = storageService.createSignedUrl(document.getFileKey());
+        log.info("Generated signed URL successfully for documentId={}", documentId);
+
+        return url;
     }
 }
