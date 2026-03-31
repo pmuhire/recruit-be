@@ -11,30 +11,30 @@ public class Document {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "application_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "application_id", nullable = false)
     private Application application;
 
+    @Column(nullable = false)
     private String fileName;
 
-    private String fileUrl;
+    @Column(nullable = false)
+    private String fileKey; // S3 object key, not public URL
 
+    @Column(nullable = false)
     private LocalDateTime uploadedAt;
 
-    // Default constructor
     public Document() {
     }
 
-    // Full constructor
-    public Document(Long id, Application application, String fileName, String fileUrl, LocalDateTime uploadedAt) {
+    public Document(Long id, Application application, String fileName, String fileKey, LocalDateTime uploadedAt) {
         this.id = id;
         this.application = application;
         this.fileName = fileName;
-        this.fileUrl = fileUrl;
+        this.fileKey = fileKey;
         this.uploadedAt = uploadedAt;
     }
 
-    // Getters and Setters
     public Long getId() {
         return id;
     }
@@ -59,12 +59,12 @@ public class Document {
         this.fileName = fileName;
     }
 
-    public String getFileUrl() {
-        return fileUrl;
+    public String getFileKey() {
+        return fileKey;
     }
 
-    public void setFileUrl(String fileUrl) {
-        this.fileUrl = fileUrl;
+    public void setFileKey(String fileKey) {
+        this.fileKey = fileKey;
     }
 
     public LocalDateTime getUploadedAt() {

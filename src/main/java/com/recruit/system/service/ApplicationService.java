@@ -1,12 +1,10 @@
 package com.recruit.system.service;
 
-import com.recruit.system.dto.request.ApplicationSubmitRequest;
 import com.recruit.system.dto.response.ApplicationResponse;
 import com.recruit.system.dto.response.DocumentResponse;
 import com.recruit.system.mapper.ApplicationMapper;
 import com.recruit.system.model.Application;
 import com.recruit.system.model.ApplicationStatus;
-import com.recruit.system.model.Document;
 import com.recruit.system.model.Job;
 import com.recruit.system.repository.ApplicationRepository;
 import com.recruit.system.repository.JobRepository;
@@ -25,6 +23,7 @@ public class ApplicationService {
     private final JobRepository jobRepository;
     private final ApplicationMapper mapper;
     private final DocumentService documentService;
+
     public ApplicationService(ApplicationRepository applicationRepository,
                               JobRepository jobRepository,
                               ApplicationMapper mapper,
@@ -34,6 +33,7 @@ public class ApplicationService {
         this.mapper = mapper;
         this.documentService = documentService;
     }
+
     @Transactional
     public ApplicationResponse apply(Long userId, Long jobId, MultipartFile cvFile) {
 
@@ -59,10 +59,13 @@ public class ApplicationService {
             throw new RuntimeException("Failed to upload document");
         }
 
-        return mapper.toResponse(application);
-    }
-    public List<ApplicationResponse> getAllApplications() {
+        Application savedApplication = applicationRepository.findById(application.getId())
+                .orElseThrow(() -> new IllegalArgumentException("Application not found after save"));
 
+        return mapper.toResponse(savedApplication);
+    }
+
+    public List<ApplicationResponse> getAllApplications() {
         return applicationRepository.findAllWithDocuments()
                 .stream()
                 .map(mapper::toResponse)
@@ -70,14 +73,13 @@ public class ApplicationService {
     }
 
     public List<ApplicationResponse> getApplicationsByUser(Long userId) {
-
         return applicationRepository.findByUserId(userId)
                 .stream()
                 .map(mapper::toResponse)
                 .collect(Collectors.toList());
     }
-    public ApplicationResponse reviewApplication(Long applicationId, ApplicationStatus status, String reviewReason) {
 
+    public ApplicationResponse reviewApplication(Long applicationId, ApplicationStatus status, String reviewReason) {
         Application application = applicationRepository.findById(applicationId)
                 .orElseThrow(() -> new IllegalArgumentException("Application not found"));
 
@@ -90,7 +92,6 @@ public class ApplicationService {
     }
 
     public List<ApplicationResponse> getApplicationsByJob(Long jobId) {
-
         return applicationRepository.findByJobId(jobId)
                 .stream()
                 .map(mapper::toResponse)
